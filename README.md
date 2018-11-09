@@ -1,16 +1,16 @@
-#KCK_Snooker
+# KCK_Snooker
 Projekt na KCK
 
 
-#Temat
+# Temat
 Kamil Januszkiewicz (127203), Mateusz Chodyła (127294)	
-#Problem
+# Problem
 Snooker – przewidywanie trajektorii bili + (ewentualnie) zliczanie ilości bil, które wpadły do łuz.
-#Rozwiązanie
+# Rozwiązanie
 Youtube + OpenCV + Python
-#Wyniki
-•	Ręcznie sprawdzamy, czy przewidywana trajektoria pokrywa się z rzeczywistą po oddaniu strzału
-•	Dane : partie snookera z Youtube.
-•	Ilość danych: co najmniej 1 rozgrywka.
-•	% predykcji subiektywnie ocenionych jako poprawne
+# Wyniki
+- Ręcznie sprawdzamy, czy przewidywana trajektoria pokrywa się z rzeczywistą po oddaniu strzału
+- Dane : partie snookera z Youtube.
+- Ilość danych: co najmniej 1 rozgrywka.
+- % predykcji subiektywnie ocenionych jako poprawne
 

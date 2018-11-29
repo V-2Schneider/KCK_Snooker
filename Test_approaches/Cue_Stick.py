@@ -10,13 +10,14 @@ def nothing(x):
     pass
 
 # warning! Cue_Stick is probably not needed anymore!
-def Cue_Stick(filename):
+# nwm
+def Cue_Stick(file):
 
     # Open the file
-    img = cv2.imread('../Pictures/Small/' + filename, cv2.IMREAD_COLOR)
-    img = cv2.GaussianBlur(img, (5,5), 0)
+    #img = cv2.GaussianBlur(file, (5,5), 0)
+    blur = cv2.bilateralFilter(file, 9, 75, 75)
     # Convert BGR to HSV
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
     return hsv
 
 def Display():
@@ -25,11 +26,11 @@ def Display():
     # Convert BGR to HSV
 
 
-    cv2.createTrackbar('H', 'image', 14, 245, nothing)
-    cv2.createTrackbar('S', 'image', 8, 255, nothing)
-    cv2.createTrackbar('V', 'image', 88, 255, nothing)
-    cv2.createTrackbar('S2', 'image', 255, 255, nothing)
-    cv2.createTrackbar('V2', 'image', 255, 255, nothing)
+    cv2.createTrackbar('H', 'image', 17, 245, nothing)
+    cv2.createTrackbar('S', 'image', 80, 255, nothing)
+    cv2.createTrackbar('V', 'image', 90, 255, nothing)
+    cv2.createTrackbar('S2', 'image', 177, 255, nothing)
+    cv2.createTrackbar('V2', 'image', 146, 255, nothing)
     cv2.createTrackbar('linel', 'image', 180, 360, nothing)
     cv2.createTrackbar('lineg', 'image', 100, 200, nothing)
 
@@ -40,7 +41,7 @@ def Display():
             break
 
         _, frame = cap.read()
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv = Cue_Stick(frame)
 
         h = cv2.getTrackbarPos('H', 'image')
         s = cv2.getTrackbarPos('S', 'image')
@@ -54,6 +55,9 @@ def Display():
 
         res = cv2.bitwise_and(frame, frame, mask=mask)
 
+        img_grey = cv2.cvtColor(res, cv2.COLOR_RGB2GRAY)
+        th3 = cv2.adaptiveThreshold(img_grey, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+
         edges = cv2.Canny(res, 200, 150, apertureSize=3)
 
         minLineLengthVal = 20
@@ -62,10 +66,11 @@ def Display():
         if (not (lines is None or len(lines) == 0)):
             for x in range(0, len(lines)):
                 for x1, y1, x2, y2 in lines[x]:
-                    cv2.line(res, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
         cv2.imshow('image', res)
         cv2.imshow('frame', frame)
+        cv2.imshow('hsv, after transformations', cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
         #cv2.imshow('image', edges)
     cv2.destroyAllWindows()
 

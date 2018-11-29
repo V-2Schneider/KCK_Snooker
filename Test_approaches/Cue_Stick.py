@@ -1,38 +1,41 @@
 import cv2
 import numpy as np
-from Pic import Pictures
+from PIL import Image, ImageEnhance
+
 
 cap = cv2.VideoCapture('../Video/Snooker.mp4')
-if (cap.isOpened()== False):
-  print("Error opening video stream or file")
+if cap.isOpened() is False:
+    print("Error opening video stream or file")
+
 
 def nothing(x):
     pass
 
+
 # warning! Cue_Stick is probably not needed anymore!
 # nwm
-def Cue_Stick(file):
-
+def cueStick(file):
     # Open the file
-    #img = cv2.GaussianBlur(file, (5,5), 0)
-    blur = cv2.bilateralFilter(file, 9, 75, 75)
+    img = cv2.GaussianBlur(file, (5, 5), 0)
+    # blur = cv2.bilateralFilter(file, 9, 75, 75)
+    image = ImageEnhance.Contrast(Image.fromarray(img)).enhance(7)
+    image = np.array(image)
     # Convert BGR to HSV
-    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     return hsv
 
-def Display():
+
+def display():
     cv2.namedWindow('image')
 
     # Convert BGR to HSV
-
-
-    cv2.createTrackbar('H', 'image', 17, 245, nothing)
-    cv2.createTrackbar('S', 'image', 80, 255, nothing)
-    cv2.createTrackbar('V', 'image', 90, 255, nothing)
-    cv2.createTrackbar('S2', 'image', 177, 255, nothing)
-    cv2.createTrackbar('V2', 'image', 146, 255, nothing)
-    cv2.createTrackbar('linel', 'image', 180, 360, nothing)
-    cv2.createTrackbar('lineg', 'image', 100, 200, nothing)
+    cv2.createTrackbar('H', 'image', 30, 245, nothing)
+    cv2.createTrackbar('S', 'image', 0, 255, nothing)
+    cv2.createTrackbar('V', 'image', 224, 255, nothing)
+    cv2.createTrackbar('S2', 'image', 255, 255, nothing)
+    cv2.createTrackbar('V2', 'image', 255, 255, nothing)
+    cv2.createTrackbar('linel', 'image', 0, 360, nothing)
+    cv2.createTrackbar('lineg', 'image', 0, 200, nothing)
 
     while (1):
 
@@ -41,7 +44,7 @@ def Display():
             break
 
         _, frame = cap.read()
-        hsv = Cue_Stick(frame)
+        hsv = cueStick(frame)
 
         h = cv2.getTrackbarPos('H', 'image')
         s = cv2.getTrackbarPos('S', 'image')
@@ -59,20 +62,24 @@ def Display():
         th3 = cv2.adaptiveThreshold(img_grey, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
         edges = cv2.Canny(res, 200, 150, apertureSize=3)
+        edges = edges[0:189, 174:465]
+        kernel = np.ones((5, 5), np.uint8)
+        erosion = cv2.erode(edges, kernel, iterations=1)
 
-        minLineLengthVal = 20
-        maxLineGapVal = 3
+        minLineLengthVal = 25
+        maxLineGapVal = 2
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=minLineLengthVal, maxLineGap=maxLineGapVal)
         if (not (lines is None or len(lines) == 0)):
             for x in range(0, len(lines)):
                 for x1, y1, x2, y2 in lines[x]:
-                    cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.line(frame, (x1+174, y1), (x2+174, y2), (0, 255, 0), 2)
 
         cv2.imshow('image', res)
         cv2.imshow('frame', frame)
+        cv2.imshow('edges', edges)
         cv2.imshow('hsv, after transformations', cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
-        #cv2.imshow('image', edges)
+        # cv2.imshow('image', edges)
     cv2.destroyAllWindows()
 
 
-Display()
+display()

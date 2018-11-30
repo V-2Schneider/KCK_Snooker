@@ -1,6 +1,11 @@
 import cv2
 import numpy as np
+from numpy import ones,vstack
+from numpy.linalg import lstsq
 from PIL import Image, ImageEnhance
+from sympy.solvers import solveset
+from sympy import Symbol
+x = Symbol('x')
 
 
 cap = cv2.VideoCapture('../Video/Snooker.mp4')
@@ -72,7 +77,16 @@ def display():
         if (not (lines is None or len(lines) == 0)):
             for x in range(0, len(lines)):
                 for x1, y1, x2, y2 in lines[x]:
-                    cv2.line(frame, (x1+174, y1), (x2+174, y2), (0, 255, 0), 2)
+                    points = [(x1, y1), (x2, y2)]
+                    x_coords, y_coords = zip(*points)
+                    A = vstack([x_coords, ones(len(x_coords))]).T
+                    m, c = lstsq(A, y_coords)[0]
+                    if not(m == 0):
+                        y3 = 286
+                        x3 = int((y3 - c)/m)
+                        print(x3)
+                        if not((x3 > 1000) or (x3 < -1000)):
+                            cv2.line(frame, (x1+174, y1), (x3+174, y3), (255, 255, 255), thickness=1)
 
         cv2.imshow('image', res)
         cv2.imshow('frame', frame)

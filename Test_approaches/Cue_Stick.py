@@ -3,7 +3,7 @@ import numpy as np
 from numpy import ones,vstack
 from numpy.linalg import lstsq
 from PIL import Image, ImageEnhance
-from sympy.solvers import solveset
+import time
 from sympy import Symbol
 x = Symbol('x')
 
@@ -19,11 +19,11 @@ def nothing(x):
 
 # warning! Cue_Stick is probably not needed anymore!
 # nwm
-def cueStick(file):
+def cueStick(file, contrast):
     # Open the file
     img = cv2.GaussianBlur(file, (5, 5), 0)
     # blur = cv2.bilateralFilter(file, 9, 75, 75)
-    image = ImageEnhance.Contrast(Image.fromarray(img)).enhance(7)
+    image = ImageEnhance.Contrast(Image.fromarray(img)).enhance(contrast)
     image = np.array(image)
     # Convert BGR to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -32,6 +32,7 @@ def cueStick(file):
 
 def display():
     cv2.namedWindow('image')
+    cv2.namedWindow('frame')
 
     # Convert BGR to HSV
     cv2.createTrackbar('H', 'image', 30, 245, nothing)
@@ -41,6 +42,7 @@ def display():
     cv2.createTrackbar('V2', 'image', 255, 255, nothing)
     cv2.createTrackbar('linel', 'image', 0, 360, nothing)
     cv2.createTrackbar('lineg', 'image', 0, 200, nothing)
+    cv2.createTrackbar('contrast', 'frame', 17, 250, nothing)
 
     while (1):
 
@@ -49,7 +51,10 @@ def display():
             break
 
         _, frame = cap.read()
-        hsv = cueStick(frame)
+
+        contrast = cv2.getTrackbarPos('contrast', 'frame')
+
+        hsv = cueStick(frame, contrast)
 
         h = cv2.getTrackbarPos('H', 'image')
         s = cv2.getTrackbarPos('S', 'image')
@@ -66,7 +71,7 @@ def display():
         img_grey = cv2.cvtColor(res, cv2.COLOR_RGB2GRAY)
         th3 = cv2.adaptiveThreshold(img_grey, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
-        edges = cv2.Canny(res, 200, 150, apertureSize=3)
+        edges = cv2.Canny(res, 100, 150, apertureSize=3)
         edges = edges[0:189, 174:465]
         kernel = np.ones((5, 5), np.uint8)
         erosion = cv2.erode(edges, kernel, iterations=1)
@@ -86,12 +91,13 @@ def display():
                         x3 = int((y3 - c)/m)
                         print(x3)
                         if not((x3 > 1000) or (x3 < -1000)):
-                            cv2.line(frame, (x1+174, y1), (x3+174, y3), (255, 255, 255), thickness=1)
+                            cv2.line(frame, (x1+174, y1), (x3+174, y3), (255, 255, 255), thickness=2)
 
         cv2.imshow('image', res)
         cv2.imshow('frame', frame)
         cv2.imshow('edges', edges)
         cv2.imshow('hsv, after transformations', cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
+        time.sleep(.005)
         # cv2.imshow('image', edges)
     cv2.destroyAllWindows()
 

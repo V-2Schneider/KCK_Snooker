@@ -6,6 +6,7 @@ from PIL import Image, ImageEnhance
 import time
 from sympy import Symbol
 x = Symbol('x')
+buf=[]
 
 
 cap = cv2.VideoCapture('../Video/Snooker.mp4')
@@ -31,18 +32,18 @@ def cueStick(file, contrast):
 
 
 def display():
-    cv2.namedWindow('image')
+    #cv2.namedWindow('image')
     cv2.namedWindow('frame')
 
     # Convert BGR to HSV
-    cv2.createTrackbar('H', 'image', 30, 245, nothing)
-    cv2.createTrackbar('S', 'image', 0, 255, nothing)
-    cv2.createTrackbar('V', 'image', 224, 255, nothing)
-    cv2.createTrackbar('S2', 'image', 255, 255, nothing)
-    cv2.createTrackbar('V2', 'image', 255, 255, nothing)
-    cv2.createTrackbar('linel', 'image', 0, 360, nothing)
-    cv2.createTrackbar('lineg', 'image', 0, 200, nothing)
-    cv2.createTrackbar('contrast', 'frame', 17, 250, nothing)
+    #cv2.createTrackbar('H', 'image', 30, 245, nothing)
+    #cv2.createTrackbar('S', 'image', 0, 255, nothing)
+    #cv2.createTrackbar('V', 'image', 224, 255, nothing)
+    #cv2.createTrackbar('S2', 'image', 255, 255, nothing)
+    #cv2.createTrackbar('V2', 'image', 255, 255, nothing)
+    #cv2.createTrackbar('linel', 'image', 0, 360, nothing)
+    #cv2.createTrackbar('lineg', 'image', 0, 200, nothing)
+    #cv2.createTrackbar('contrast', 'frame', 17, 250, nothing)
 
     while (1):
 
@@ -52,15 +53,15 @@ def display():
 
         _, frame = cap.read()
 
-        contrast = cv2.getTrackbarPos('contrast', 'frame')
+        contrast = 17 #cv2.getTrackbarPos('contrast', 'frame')
 
         hsv = cueStick(frame, contrast)
 
-        h = cv2.getTrackbarPos('H', 'image')
-        s = cv2.getTrackbarPos('S', 'image')
-        v = cv2.getTrackbarPos('V', 'image')
-        s2 = cv2.getTrackbarPos('S2', 'image')
-        v2 = cv2.getTrackbarPos('V2', 'image')
+        h = 30 #cv2.getTrackbarPos('H', 'image')
+        s = 0 #cv2.getTrackbarPos('S', 'image')
+        v = 224 #cv2.getTrackbarPos('V', 'image')
+        s2 = 255 #cv2.getTrackbarPos('S2', 'image')
+        v2 = 255 #cv2.getTrackbarPos('V2', 'image')
         lower_stick = np.array([h - 5, s, v])
         upper_stick = np.array([h + 5, s2, v2])
 
@@ -80,24 +81,25 @@ def display():
         maxLineGapVal = 2
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=minLineLengthVal, maxLineGap=maxLineGapVal)
         if (not (lines is None or len(lines) == 0)):
-            for x in range(0, len(lines)):
-                for x1, y1, x2, y2 in lines[x]:
-                    points = [(x1, y1), (x2, y2)]
-                    x_coords, y_coords = zip(*points)
-                    A = vstack([x_coords, ones(len(x_coords))]).T
-                    m, c = lstsq(A, y_coords)[0]
-                    if not(m == 0):
-                        y3 = 286
-                        x3 = int((y3 - c)/m)
-                        print(x3)
-                        if not((x3 > 1000) or (x3 < -1000)):
-                            cv2.line(frame, (x1+174, y1), (x3+174, y3), (255, 255, 255), thickness=2)
+            buf = lines.copy()
+        for x in range(0, len(buf)):
+            for x1, y1, x2, y2 in buf[x]:
+                points = [(x1, y1), (x2, y2)]
+                x_coords, y_coords = zip(*points)
+                A = vstack([x_coords, ones(len(x_coords))]).T
+                m, c = lstsq(A, y_coords)[0]
+                if not(m == 0):
+                    y3 = 286
+                    x3 = int((y3 - c)/m)
+                    #print(x3)
+                    if not((x3 > 1000) or (x3 < -1000)):
+                        cv2.line(frame, (x1+174, y1), (x3+174, y3), (255, 255, 255), thickness=2)
 
-        cv2.imshow('image', res)
+        #cv2.imshow('image', res)
         cv2.imshow('frame', frame)
-        cv2.imshow('edges', edges)
-        cv2.imshow('hsv, after transformations', cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
-        time.sleep(.005)
+        #cv2.imshow('edges', edges)
+        #cv2.imshow('hsv, after transformations', cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR))
+        time.sleep(.02)
         # cv2.imshow('image', edges)
     cv2.destroyAllWindows()
 
